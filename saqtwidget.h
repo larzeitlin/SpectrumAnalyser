@@ -2,11 +2,15 @@
 #define SAQTWIDGET_H
 
 #include<QOpenGLWidget>
+#include<QOpenGLFunctions>
 
-class Saqtwidget : public QOpenGLWidget
+class Saqtwidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
 public:
     Saqtwidget(QWidget *parent);
+
+    GLuint VertexArrayID;
+    GLuint vertexBuffer;
 
 protected:
     void initializeGL() override;
