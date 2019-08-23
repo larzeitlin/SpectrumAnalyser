@@ -22,7 +22,8 @@ SOURCES += \
 
 HEADERS += \
     mainwindow.h \
-    saqtwidget.h
+    saqtwidget.h \
+    vertex.h
 
 FORMS += \
     mainwindow.ui
@@ -31,3 +32,10 @@ FORMS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+DISTFILES += \
+    shaders/simple.frag \
+    shaders/simple.vert
+
+RESOURCES += \
+    resources.qrc
