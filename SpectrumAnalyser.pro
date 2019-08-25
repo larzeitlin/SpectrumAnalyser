@@ -18,11 +18,13 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     main.cpp \
     mainwindow.cpp \
-    saqtwidget.cpp
+    saqtwidget.cpp \
+    transform3d.cpp
 
 HEADERS += \
     mainwindow.h \
     saqtwidget.h \
+    transform3d.h \
     vertex.h
 
 FORMS += \
