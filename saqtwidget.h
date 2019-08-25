@@ -14,6 +14,8 @@ class Saqtwidget : public QOpenGLWidget,
                    protected QOpenGLFunctions
 
 {
+    Q_OBJECT
+
 public:
     Saqtwidget(QWidget *parent);
     ~Saqtwidget() override;
