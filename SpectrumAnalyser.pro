@@ -16,12 +16,14 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    cuboidverts.cpp \
     main.cpp \
     mainwindow.cpp \
     saqtwidget.cpp \
     transform3d.cpp
 
 HEADERS += \
+    cuboidverts.h \
     mainwindow.h \
     saqtwidget.h \
     transform3d.h \

@@ -35,7 +35,7 @@ protected slots:
 
 private:
     // OpenGL state info
-    QOpenGLBuffer m_vertex;
+    QOpenGLBuffer m_gl_buffer;
     QOpenGLVertexArrayObject m_object;
     QOpenGLShaderProgram *m_program;
 
