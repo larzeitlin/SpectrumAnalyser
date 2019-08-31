@@ -7,6 +7,7 @@
 #include <QOpenGLVertexArrayObject>
 #include <QMatrix4x4>
 #include <transform3d.h>
+#include <QTime>
 
 class QOpenGLShaderProgram;
 
@@ -34,16 +35,21 @@ protected slots:
 
 
 private:
+    void ComputePositionOffsets(float &fXOffset, float &fYoffset);
+
     // OpenGL state info
-    QOpenGLBuffer m_gl_buffer;
-    QOpenGLVertexArrayObject m_object;
-    QOpenGLShaderProgram *m_program;
+    QOpenGLBuffer gl_buffer;
+    QOpenGLVertexArrayObject object;
+    QOpenGLShaderProgram *program;
 
     // Shader info
-    int u_modelToWorld;
-    int u_worldToView;
-    QMatrix4x4 m_projection;
-    Transform3D m_transform;
+    int modelToWorld;
+    int worldToView;
+    int timeElapsed;
+
+    QMatrix4x4 projection;
+    Transform3D transform;
+    QTime timer;
 
 };
 
