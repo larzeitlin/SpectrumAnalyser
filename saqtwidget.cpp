@@ -3,14 +3,20 @@
 #include "vertex.h"
 #include "cuboidverts.h"
 #include <math.h>
+#include "transform3d.h"
 
 static const  std::array<Vertex, 36> vertexArray = CuboidVerts(1.0f, 1.0f, 1.0f).getVertexArray();
 
 
 Saqtwidget::Saqtwidget(QWidget *parent) : QOpenGLWidget(parent)
 {
+    int nboxes = 20;
     timer.start();
-    transform.translate(0.0f, 0.0f, -5.0f);
+    for (int i = 0; i < nboxes; ++i) {
+        transforms.push_back(Transform3D());
+        transforms.back().translate(0.0f, 0.05f * i, -5.0f);
+        transforms.back().rotate(5.0f * i, -1.0f, -1.0f, 1.0f);
+    }
 }
 
 void Saqtwidget::initializeGL()
@@ -47,11 +53,10 @@ void Saqtwidget::initializeGL()
 
       gl_buffer.allocate(vertexArray.data(), sizeof(vertexArray[0]) * vertexArray.size());
 
-      // m_gl_buffer.allocate(sg_vertices, sizeof(sg_vertices));
 
       // Create Vertex Array Object
-      object.create();
-      object.bind();
+      vbObject.create();
+      vbObject.bind();
       program->enableAttributeArray(0);
       program->enableAttributeArray(1);
       program->setAttributeBuffer(0, GL_FLOAT, Vertex::positionOffset(),
@@ -60,7 +65,7 @@ void Saqtwidget::initializeGL()
                                     Vertex::ColorTupleSize, Vertex::stride());
 
       // Release (unbind) all
-      object.release();
+      vbObject.release();
       gl_buffer.release();
       program->release();
     }
@@ -81,12 +86,15 @@ void Saqtwidget::paintGL()
     program->bind();
     program->setUniformValue(worldToView, projection);
     glUniform1f(timeElapsed, timeInMillis);
-    object.bind();
+    vbObject.bind();
+    for (auto t : transforms) {
+        program->setUniformValue(modelToWorld, t.toMatrix());
+        glDrawArrays(GL_TRIANGLES, 0, vertexArray.size());
+    }
 
-      program->setUniformValue(modelToWorld, transform.toMatrix());
-      glDrawArrays(GL_TRIANGLES, 0, vertexArray.size());
 
-    object.release();
+
+    vbObject.release();
     program->release();
 }
 
@@ -97,7 +105,7 @@ void Saqtwidget::update()
 }
 
 Saqtwidget::~Saqtwidget() {
-    object.destroy();
+    vbObject.destroy();
     gl_buffer.destroy();
     delete program;
 }

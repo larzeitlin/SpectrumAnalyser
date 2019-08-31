@@ -39,16 +39,16 @@ private:
 
     // OpenGL state info
     QOpenGLBuffer gl_buffer;
-    QOpenGLVertexArrayObject object;
+    QOpenGLVertexArrayObject vbObject;
     QOpenGLShaderProgram *program;
 
-    // Shader info
+    // Shader uniforms etc
     int modelToWorld;
     int worldToView;
     int timeElapsed;
 
     QMatrix4x4 projection;
-    Transform3D transform;
+    std::vector<Transform3D> transforms;
     QTime timer;
 
 };
