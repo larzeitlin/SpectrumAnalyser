@@ -109,3 +109,9 @@ Saqtwidget::~Saqtwidget() {
     gl_buffer.destroy();
     delete program;
 }
+
+void Saqtwidget::processAudioBuffer(QAudioBuffer buffer)
+{
+    const quint16 *data = buffer.constData<quint16>();
+    qInfo() << data[0] << "\n";
+}

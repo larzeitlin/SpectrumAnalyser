@@ -21,14 +21,13 @@ public:
 
 private slots:
     void on_actionLoad_triggered();
-
     void on_playButton_clicked();
-
     void on_stopButton_clicked();
 
 private:
     Ui::MainWindow *ui;
     QString currentFile;
     QMediaPlayer player;
+    QAudioProbe probe;
 };
 #endif // MAINWINDOW_H

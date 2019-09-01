@@ -1,5 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include <iostream>
+#include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -30,6 +32,11 @@ void MainWindow::on_playButton_clicked()
         player.play();
     } else {
         ui->label->setText("Can't Play File");
+    }
+    if (probe.setSource(&player))
+    {
+        connect(&probe, SIGNAL(audioBufferProbed(QAudioBuffer)),
+                ui->openGLWidget, SLOT(processAudioBuffer(QAudioBuffer)));
     }
 }
 void MainWindow::on_stopButton_clicked()

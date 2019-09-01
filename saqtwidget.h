@@ -8,6 +8,7 @@
 #include <QMatrix4x4>
 #include <transform3d.h>
 #include <QTime>
+#include <QAudioProbe>
 
 class QOpenGLShaderProgram;
 
@@ -32,6 +33,7 @@ protected:
 
 protected slots:
     void update();
+    void processAudioBuffer(QAudioBuffer buffer);
 
 
 private:
