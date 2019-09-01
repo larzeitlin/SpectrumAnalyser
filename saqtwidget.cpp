@@ -10,6 +10,8 @@ static const  std::array<Vertex, 36> vertexArray = CuboidVerts(1.0f, 1.0f, 1.0f)
 
 Saqtwidget::Saqtwidget(QWidget *parent) : QOpenGLWidget(parent)
 {
+    // Set up our spinny cubes ---------------------
+
     int nboxes = 20;
     timer.start();
     for (int i = 0; i < nboxes; ++i) {
@@ -17,6 +19,17 @@ Saqtwidget::Saqtwidget(QWidget *parent) : QOpenGLWidget(parent)
         transforms.back().translate(0.0f, 0.05f * i, -5.0f);
         transforms.back().rotate(5.0f * i, -1.0f, -1.0f, 1.0f);
     }
+
+    // Set up our spinny cubes ----------------END
+
+
+    // Just testing out the FFT here ------------
+
+    std::vector<double> testvec {1.0, 0.0, -1.0, 0.0, 1.0, 0.0, -1.0, 0.0};
+    processor.processBuffer(testvec);
+
+     // Just testing out the FFT here ---------END
+
 }
 
 void Saqtwidget::initializeGL()

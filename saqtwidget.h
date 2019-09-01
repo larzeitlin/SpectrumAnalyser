@@ -9,6 +9,7 @@
 #include <transform3d.h>
 #include <QTime>
 #include <QAudioProbe>
+#include "audioprocessor.h"
 
 class QOpenGLShaderProgram;
 
@@ -52,6 +53,8 @@ private:
     QMatrix4x4 projection;
     std::vector<Transform3D> transforms;
     QTime timer;
+
+    AudioProcessor processor;
 
 };
 
