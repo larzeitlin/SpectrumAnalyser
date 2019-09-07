@@ -42,6 +42,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 DISTFILES += \
+    README.md \
     shaders/simple.frag \
     shaders/simple.vert
 
