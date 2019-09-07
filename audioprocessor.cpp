@@ -3,27 +3,20 @@
 #include <string.h>
 #include <QDebug>
 
-AudioProcessor::AudioProcessor()
+// temporary hack
+const int buffer_length = 1764;
+
+AudioProcessor::AudioProcessor() : fft_out(std::vector<fftw_complex>((buffer_length / 2) + 1))
 {}
 
-void AudioProcessor::processBuffer(std::vector<double> buffer_in)
+const std::vector<fftw_complex> & AudioProcessor::processBuffer(std::vector<double> buffer_in)
 {
-    qInfo() << "hi, I'm here \n";
-    int N = int(buffer_in.size());
-
-    std::vector<fftw_complex> out(N);
-
     fftw_plan my_plan;
-    my_plan = fftw_plan_dft_r2c_1d(N,
-                                   &buffer_in.front(),
-                                   &out.front(),
-                                   FFTW_ESTIMATE);
+    my_plan = fftw_plan_dft_r2c_1d(buffer_length,
+                                   buffer_in.data(),
+                                   fft_out.data(),
+                                   FFTW_MEASURE);
     fftw_execute(my_plan);
-
-    for (auto i: out)
-    {
-        qInfo() << "Real Part: " << i[0] << " Ima Part: " << i[1] << "\n";
-    }
-
     fftw_destroy_plan(my_plan);
+    return fft_out;
 }

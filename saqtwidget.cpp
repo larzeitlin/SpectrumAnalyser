@@ -6,30 +6,46 @@
 #include "transform3d.h"
 
 static const  std::array<Vertex, 36> vertexArray = CuboidVerts(1.0f, 1.0f, 1.0f).getVertexArray();
+// for now we will hardcode these, they should however be pulled from audio file when loaded
+const int n_channels = 2;
+const int frameCount = 1764;
+const int sampleCount = n_channels * frameCount;
+const int n_spectrumBins = 1 + (frameCount / 2);
+
+void han_window(std::vector<double> &data_in, int frames)
+{
+    for (int i = 0; i < frames; i++) {
+        double multiplier = 0.5 * (1 - std::cos(2.0*M_PI*i/(frames - 1)));
+        data_in[i] *= multiplier;
+    }
+}
+
+Saqtwidget::Saqtwidget(QWidget *parent) :
+    QOpenGLWidget(parent)
+  , real_spectrum_l(std::vector<double>(n_spectrumBins))
+  , real_spectrum_r(std::vector<double>(n_spectrumBins))
 
 
-Saqtwidget::Saqtwidget(QWidget *parent) : QOpenGLWidget(parent)
 {
     // Set up our spinny cubes ---------------------
 
-    int nboxes = 20;
+    int nboxes = frameCount;
     timer.start();
     for (int i = 0; i < nboxes; ++i) {
         transforms.push_back(Transform3D());
-        transforms.back().translate(0.0f, 0.05f * i, -5.0f);
-        transforms.back().rotate(5.0f * i, -1.0f, -1.0f, 1.0f);
+        transforms.back().translate(-2.0f + (0.05f * i), -0.5f, -5.0f);
+        transforms.back().setScale(0.02f);
+        transforms.back().rotate(5.0f, -1.0f, -1.0f, 1.0f);
     }
 
     // Set up our spinny cubes ----------------END
 
-
     // Just testing out the FFT here ------------
 
     std::vector<double> testvec {1.0, 0.0, -1.0, 0.0, 1.0, 0.0, -1.0, 0.0};
-    processor.processBuffer(testvec);
+    // processor.processBuffer(testvec);
 
      // Just testing out the FFT here ---------END
-
 }
 
 void Saqtwidget::initializeGL()
@@ -57,6 +73,7 @@ void Saqtwidget::initializeGL()
       modelToWorld = program->uniformLocation("modelToWorld");
       worldToView = program->uniformLocation("worldToView");
       timeElapsed = program->uniformLocation("timeElapsedInMillis");
+      fftVal = program->uniformLocation("FFTVal");
 
       // Create Buffer (Do not release until VAO is created)
       gl_buffer.create();
@@ -100,10 +117,21 @@ void Saqtwidget::paintGL()
     program->setUniformValue(worldToView, projection);
     glUniform1f(timeElapsed, timeInMillis);
     vbObject.bind();
-    for (auto t : transforms) {
-        program->setUniformValue(modelToWorld, t.toMatrix());
+
+    for (int i = 0; i < real_spectrum_l.size(); ++i)
+    {
+        program->setUniformValue(modelToWorld, transforms[i].toMatrix());
+        program->setUniformValue(fftVal, float(real_spectrum_l[i]));
         glDrawArrays(GL_TRIANGLES, 0, vertexArray.size());
     }
+
+
+  //  for (auto t : transforms) {
+  //      program->setUniformValue(modelToWorld, t.toMatrix());
+  //      program->setUniformValue(fftVal, float(real_spectrum_l[counter]));
+  //      glDrawArrays(GL_TRIANGLES, 0, vertexArray.size());
+  //      counter += 1;
+  //  }
 
 
 
@@ -123,8 +151,43 @@ Saqtwidget::~Saqtwidget() {
     delete program;
 }
 
+double normalize(int val_in, double divisor)
+{
+    return (double(val_in) / divisor) - 0.5;
+}
+
+
+
 void Saqtwidget::processAudioBuffer(QAudioBuffer buffer)
 {
+    if (real_spectrum_l.size() != n_spectrumBins)
+    {
+        real_spectrum_l.resize(n_spectrumBins);
+        real_spectrum_r.resize(n_spectrumBins);
+    }
+    // this is a nieve implementation to get things goings, should be optimized.
+    std::vector<double> l_channel;
+    std::vector<double> r_channel;
     const quint16 *data = buffer.constData<quint16>();
-    qInfo() << data[0] << "\n";
-}
+
+    // qInfo() << normalize(data[10], 65535.0);
+
+    for (int sample = 0; sample < sampleCount; ++sample)
+    {
+        if (sample % 2 == 0)
+            l_channel.push_back( normalize(data[sample], 65535.0));
+        else
+            r_channel.push_back( normalize(data[sample], 65535.0));
+    }
+    han_window(l_channel, int(l_channel.size()));
+    han_window(r_channel, int(r_channel.size()));
+
+    const std::vector<fftw_complex> &fft_out_l = processor.processBuffer(l_channel);
+    const std::vector<fftw_complex> &fft_out_r = processor.processBuffer(r_channel);
+
+    for (int i = 0; i < n_spectrumBins; ++i)
+    {
+        real_spectrum_l[i] = std::sqrt(std::pow(fft_out_l[i][0], 2.0) + std::pow(fft_out_l[i][1], 2.0)) / n_spectrumBins;
+        real_spectrum_r[i] = std::sqrt(std::pow(fft_out_r[i][0], 2.0) + std::pow(fft_out_r[i][1], 2.0)) / n_spectrumBins;
+    }
+ }

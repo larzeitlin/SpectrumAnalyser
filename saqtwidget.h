@@ -49,13 +49,16 @@ private:
     int modelToWorld;
     int worldToView;
     int timeElapsed;
+    int fftVal;
+
 
     QMatrix4x4 projection;
     std::vector<Transform3D> transforms;
     QTime timer;
 
     AudioProcessor processor;
-
+    std::vector<double> real_spectrum_l;
+    std::vector<double> real_spectrum_r;
 };
 
 #endif // SAQTWIDGET_H

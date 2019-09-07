@@ -6,6 +6,7 @@ out vec4 vColor;
 uniform mat4 modelToWorld;
 uniform mat4 worldToView;
 uniform float timeElapsedInMillis;
+uniform float FFTVal;
 
 
 mat4 rotationMatrix(vec3 axis, float angle)
@@ -25,9 +26,9 @@ mat4 rotationMatrix(vec3 axis, float angle)
 void main(void)
 {
     float seconds = timeElapsedInMillis / 1000.0f;
-    vec4 rotatedPosition = vec4(position, 1.0) * rotationMatrix(vec3(1.0, 0.0, 0.0), seconds);
+    vec4 rotatedPosition = vec4(position, 1.0) * rotationMatrix(vec3(1.0, 0.0, 0.0), 0);
     //vec4 totalOffset = vec4(sin(seconds), cos(seconds), 0.0f, 0.0);
-    vec4 totalOffset = vec4(0.0f, 0.0f, 0.0f, 0.0f);
+    vec4 totalOffset = vec4(0.0f, FFTVal * 100.0f, 0.0f, 0.0f);
     vec4 objectPosition = rotatedPosition + totalOffset;
     gl_Position = worldToView * modelToWorld * objectPosition;
     vColor = vec4(color, 1.0);

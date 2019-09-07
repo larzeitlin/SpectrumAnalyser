@@ -1,12 +1,15 @@
 #ifndef AUDIOPROCESSOR_H
 #define AUDIOPROCESSOR_H
 #include <vector>
-
+#include <fftw3.h>
 class AudioProcessor
 {
 public:
     AudioProcessor();
-    void processBuffer(std::vector<double> buffer_in);
+    const std::vector<fftw_complex> & processBuffer(std::vector<double> buffer_in);
+
+private:
+    std::vector<fftw_complex> fft_out;
 };
 
 #endif // AUDIOPROCESSOR_H
