@@ -22,7 +22,6 @@ class Saqtwidget : public QOpenGLWidget,
 public:
     Saqtwidget(QWidget *parent);
     ~Saqtwidget() override;
-
     GLuint VertexArrayID;
     GLuint vertexBuffer;
     void newAudioFileFlag();
@@ -37,15 +36,12 @@ protected slots:
     void update();
     void processAudioBuffer(QAudioBuffer buffer);
 
-
 private:
     bool newAudioFile;
-
     int n_channels;
     int frameCount;
     int sampleCount;
     int n_spectrumBins;
-
 
     void ComputePositionOffsets(float &fXOffset, float &fYoffset);
 

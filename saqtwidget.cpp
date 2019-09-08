@@ -6,7 +6,8 @@
 #include "transform3d.h"
 #include "audioutils.h"
 
-static const  std::array<Vertex, 36> vertexArray = CuboidVerts(1.0f, 1.0f, 1.0f).getVertexArray();
+
+static const  std::array<Vertex, 1> vertexArray = {Vertex(QVector3D(0.0f, 0.0f, 0.0f), QVector3D(0.0f, 1.0f, 0.0f))};
 
 Saqtwidget::Saqtwidget(QWidget *parent) :
     QOpenGLWidget(parent)
@@ -25,9 +26,8 @@ Saqtwidget::Saqtwidget(QWidget *parent) :
     timer.start();
     for (int i = 0; i < nboxes; ++i) {
         transforms.push_back(Transform3D());
-        transforms.back().translate(-2.0f + (0.05f * i), -0.5f, -5.0f);
-        transforms.back().setScale(0.02f);
-        transforms.back().rotate(5.0f, -1.0f, -1.0f, 1.0f);
+        //transforms.back().translate(-0.9f + float(i) * (1.8f / float(n_spectrumBins)), -0.9f, 0.0f);
+        transforms.back().translate(-0.9f + (float(std::log(i) / std::log(n_spectrumBins) ) * 1.8f), -0.9f, 0.0f);
     }
 }
 
@@ -94,7 +94,7 @@ void Saqtwidget::paintGL()
     {
         program->setUniformValue(modelToWorld, transforms[i].toMatrix());
         program->setUniformValue(fftVal, float(amp_spectrum_l[i]));
-        glDrawArrays(GL_TRIANGLES, 0, vertexArray.size());
+        glDrawArrays(GL_POINTS, 0, vertexArray.size());
     }
 
     vbObject.release();
@@ -117,6 +117,11 @@ Saqtwidget::~Saqtwidget() {
 void Saqtwidget::newAudioFileFlag()
 {
     newAudioFile = true;
+}
+
+double smoothing(double newVal, double smoothCoef, double previousVal)
+{
+    return (smoothCoef * newVal) + ((1.0 - smoothCoef) * previousVal);
 }
 
 void Saqtwidget::processAudioBuffer(QAudioBuffer buffer)
@@ -149,15 +154,17 @@ void Saqtwidget::processAudioBuffer(QAudioBuffer buffer)
             r_channel.push_back(AudioUtils::normalize(data[sample], 65535.0));
     }
 
-    AudioUtils::han_window(l_channel, int(l_channel.size()));
-    AudioUtils::han_window(r_channel, int(r_channel.size()));
+    AudioUtils::hamming_window(l_channel, int(l_channel.size()));
+    AudioUtils::hamming_window(r_channel, int(r_channel.size()));
 
     const std::vector<fftw_complex> &fft_out_l = processor.processBuffer(l_channel, n_spectrumBins);
     const std::vector<fftw_complex> &fft_out_r = processor.processBuffer(r_channel, n_spectrumBins);
 
+    double smoothFactor = 0.4;
+
     for (int i = 0; i < n_spectrumBins; ++i)
     {
-        amp_spectrum_l[i] = AudioUtils::amplitude_at_freq(fft_out_l[i][0], fft_out_l[i][1], n_spectrumBins);
-        amp_spectrum_r[i] = AudioUtils::amplitude_at_freq(fft_out_r[i][0], fft_out_r[i][1], n_spectrumBins);
+        amp_spectrum_l[i] = smoothing(AudioUtils::db_at_freq(fft_out_l[i][0], fft_out_l[i][1], n_spectrumBins), smoothFactor, amp_spectrum_l[i]);
+        amp_spectrum_r[i] = smoothing(AudioUtils::db_at_freq(fft_out_r[i][0], fft_out_r[i][1], n_spectrumBins), smoothFactor, amp_spectrum_l[i]);
     }
  }
