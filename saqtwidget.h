@@ -65,8 +65,8 @@ private:
     QTime timer;
 
     AudioProcessor processor;
-    std::vector<double> real_spectrum_l;
-    std::vector<double> real_spectrum_r;
+    std::vector<double> amp_spectrum_l;
+    std::vector<double> amp_spectrum_r;
 };
 
 #endif // SAQTWIDGET_H

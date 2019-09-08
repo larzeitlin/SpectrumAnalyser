@@ -15,8 +15,8 @@ Saqtwidget::Saqtwidget(QWidget *parent) :
   , frameCount(1764)
   , sampleCount(n_channels * frameCount)
   , n_spectrumBins(1 + (frameCount / 2))
-  , real_spectrum_l(std::vector<double>(n_spectrumBins))
-  , real_spectrum_r(std::vector<double>(n_spectrumBins))
+  , amp_spectrum_l(std::vector<double>(n_spectrumBins))
+  , amp_spectrum_r(std::vector<double>(n_spectrumBins))
 
 
 
@@ -84,17 +84,16 @@ void Saqtwidget::resizeGL(int w, int h)
 
 void Saqtwidget::paintGL()
 {
-    float timeInMillis = timer.elapsed();
     glClear(GL_COLOR_BUFFER_BIT);
     program->bind();
     program->setUniformValue(worldToView, projection);
-    glUniform1f(timeElapsed, timeInMillis);
+    glUniform1f(timeElapsed, timer.elapsed());
     vbObject.bind();
 
-    for (int i = 0; i < int(real_spectrum_l.size()); ++i)
+    for (int i = 0; i < int(amp_spectrum_l.size()); ++i)
     {
         program->setUniformValue(modelToWorld, transforms[i].toMatrix());
-        program->setUniformValue(fftVal, float(real_spectrum_l[i]));
+        program->setUniformValue(fftVal, float(amp_spectrum_l[i]));
         glDrawArrays(GL_TRIANGLES, 0, vertexArray.size());
     }
 
@@ -132,10 +131,10 @@ void Saqtwidget::processAudioBuffer(QAudioBuffer buffer)
     }
 
 
-    if (int(real_spectrum_l.size()) != n_spectrumBins)
+    if (int(amp_spectrum_l.size()) != n_spectrumBins)
     {
-        real_spectrum_l.resize(n_spectrumBins);
-        real_spectrum_r.resize(n_spectrumBins);
+        amp_spectrum_l.resize(n_spectrumBins);
+        amp_spectrum_r.resize(n_spectrumBins);
     }
     // this is a nieve implementation to get things goings, should be optimized.
     std::vector<double> l_channel;
@@ -153,12 +152,12 @@ void Saqtwidget::processAudioBuffer(QAudioBuffer buffer)
     AudioUtils::han_window(l_channel, int(l_channel.size()));
     AudioUtils::han_window(r_channel, int(r_channel.size()));
 
-    const std::vector<fftw_complex> &fft_out_l = processor.processBuffer(l_channel);
-    const std::vector<fftw_complex> &fft_out_r = processor.processBuffer(r_channel);
+    const std::vector<fftw_complex> &fft_out_l = processor.processBuffer(l_channel, n_spectrumBins);
+    const std::vector<fftw_complex> &fft_out_r = processor.processBuffer(r_channel, n_spectrumBins);
 
     for (int i = 0; i < n_spectrumBins; ++i)
     {
-        real_spectrum_l[i] = AudioUtils::amplitude_at_freq(fft_out_l[i][0], fft_out_l[i][1], n_spectrumBins);
-        real_spectrum_r[i] = AudioUtils::amplitude_at_freq(fft_out_r[i][0], fft_out_r[i][1], n_spectrumBins);
+        amp_spectrum_l[i] = AudioUtils::amplitude_at_freq(fft_out_l[i][0], fft_out_l[i][1], n_spectrumBins);
+        amp_spectrum_r[i] = AudioUtils::amplitude_at_freq(fft_out_r[i][0], fft_out_r[i][1], n_spectrumBins);
     }
  }
