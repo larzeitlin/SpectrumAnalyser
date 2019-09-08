@@ -27,6 +27,7 @@ SOURCES += \
 
 HEADERS += \
     audioprocessor.h \
+    audioutils.h \
     cuboidverts.h \
     mainwindow.h \
     saqtwidget.h \

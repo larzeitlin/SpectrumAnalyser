@@ -6,7 +6,8 @@
 // temporary hack
 const int buffer_length = 1764;
 
-AudioProcessor::AudioProcessor() : fft_out(std::vector<fftw_complex>((buffer_length / 2) + 1))
+AudioProcessor::AudioProcessor() :
+    fft_out(std::vector<fftw_complex>((buffer_length / 2) + 1))
 {}
 
 const std::vector<fftw_complex> & AudioProcessor::processBuffer(std::vector<double> buffer_in)

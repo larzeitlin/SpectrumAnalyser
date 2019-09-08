@@ -51,7 +51,6 @@ private:
     int timeElapsed;
     int fftVal;
 
-
     QMatrix4x4 projection;
     std::vector<Transform3D> transforms;
     QTime timer;
