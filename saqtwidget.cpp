@@ -6,19 +6,18 @@
 #include "transform3d.h"
 #include "audioutils.h"
 
-
 static const  std::array<Vertex, 36> vertexArray = CuboidVerts(1.0f, 1.0f, 1.0f).getVertexArray();
-// for now we will hardcode these, they should however be pulled from audio file when loaded
-const int n_channels = 2;
-const int frameCount = 1764;
-const int sampleCount = n_channels * frameCount;
-const int n_spectrumBins = 1 + (frameCount / 2);
-
 
 Saqtwidget::Saqtwidget(QWidget *parent) :
     QOpenGLWidget(parent)
+  , newAudioFile(false)
+  , n_channels(2)
+  , frameCount(1764)
+  , sampleCount(n_channels * frameCount)
+  , n_spectrumBins(1 + (frameCount / 2))
   , real_spectrum_l(std::vector<double>(n_spectrumBins))
   , real_spectrum_r(std::vector<double>(n_spectrumBins))
+
 
 
 {
@@ -116,9 +115,24 @@ Saqtwidget::~Saqtwidget() {
     delete program;
 }
 
+void Saqtwidget::newAudioFileFlag()
+{
+    newAudioFile = true;
+}
+
 void Saqtwidget::processAudioBuffer(QAudioBuffer buffer)
 {
-    if (real_spectrum_l.size() != n_spectrumBins)
+    if (newAudioFile)
+    {
+        n_channels = buffer.format().channelCount();
+        frameCount = buffer.frameCount();
+        sampleCount = buffer.sampleCount();
+        n_spectrumBins = 1 + (frameCount / 2);
+        newAudioFile = false;
+    }
+
+
+    if (int(real_spectrum_l.size()) != n_spectrumBins)
     {
         real_spectrum_l.resize(n_spectrumBins);
         real_spectrum_r.resize(n_spectrumBins);

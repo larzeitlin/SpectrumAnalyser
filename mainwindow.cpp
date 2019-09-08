@@ -21,6 +21,7 @@ void MainWindow::on_actionLoad_triggered()
 {
     currentFile = QFileDialog::getOpenFileName(this, "open a file");
     ui->label->setText(currentFile);
+    ui->openGLWidget->newAudioFileFlag();
 }
 
 void MainWindow::on_playButton_clicked()

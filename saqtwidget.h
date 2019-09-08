@@ -25,6 +25,7 @@ public:
 
     GLuint VertexArrayID;
     GLuint vertexBuffer;
+    void newAudioFileFlag();
 
 protected:
     void initializeGL() override;
@@ -38,6 +39,14 @@ protected slots:
 
 
 private:
+    bool newAudioFile;
+
+    int n_channels;
+    int frameCount;
+    int sampleCount;
+    int n_spectrumBins;
+
+
     void ComputePositionOffsets(float &fXOffset, float &fYoffset);
 
     // OpenGL state info
