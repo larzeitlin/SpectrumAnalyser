@@ -19,7 +19,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     audioprocessor.cpp \
-    cuboidverts.cpp \
     main.cpp \
     mainwindow.cpp \
     saqtwidget.cpp \
@@ -28,7 +27,6 @@ SOURCES += \
 HEADERS += \
     audioprocessor.h \
     audioutils.h \
-    cuboidverts.h \
     mainwindow.h \
     saqtwidget.h \
     transform3d.h \

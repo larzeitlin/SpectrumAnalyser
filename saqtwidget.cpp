@@ -1,21 +1,26 @@
 #include "saqtwidget.h"
 #include <QOpenGLShaderProgram>
 #include "vertex.h"
-#include "cuboidverts.h"
 #include <math.h>
 #include "transform3d.h"
 #include "audioutils.h"
 
+
+// Default values
+static int default_n_channels = 2;
+static int default_frame_count = 1764;
+static int default_sample_count = default_n_channels * default_frame_count;
+static int default_n_spectrum_bins = (default_frame_count / 2) + 1;
 
 static const  std::array<Vertex, 1> vertexArray = {Vertex(QVector3D(0.0f, 0.0f, 0.0f), QVector3D(0.0f, 1.0f, 0.0f))};
 
 Saqtwidget::Saqtwidget(QWidget *parent) :
     QOpenGLWidget(parent)
   , newAudioFile(false)
-  , n_channels(2)
-  , frameCount(1764)
-  , sampleCount(n_channels * frameCount)
-  , n_spectrumBins(1 + (frameCount / 2))
+  , n_channels(default_n_channels)
+  , frameCount(default_frame_count)
+  , sampleCount(default_sample_count)
+  , n_spectrumBins(default_n_spectrum_bins)
   , amp_spectrum_l(std::vector<double>(n_spectrumBins))
   , amp_spectrum_r(std::vector<double>(n_spectrumBins))
 
@@ -26,7 +31,6 @@ Saqtwidget::Saqtwidget(QWidget *parent) :
     timer.start();
     for (int i = 0; i < nboxes; ++i) {
         transforms.push_back(Transform3D());
-        //transforms.back().translate(-0.9f + float(i) * (1.8f / float(n_spectrumBins)), -0.9f, 0.0f);
         transforms.back().translate(-0.9f + (float(std::log(i) / std::log(n_spectrumBins) ) * 1.8f), -0.9f, 0.0f);
     }
 }
@@ -54,8 +58,7 @@ void Saqtwidget::initializeGL()
 
       gl_buffer.create();
       gl_buffer.bind();
-      gl_buffer.setUsagePattern(QOpenGLBuffer::StaticDraw);
-      // consider StreamDraw when changing buffer data... https://paroj.github.io/gltut/Positioning/Tutorial%2003.html
+      gl_buffer.setUsagePattern(QOpenGLBuffer::StreamDraw);
       gl_buffer.allocate(vertexArray.data(), sizeof(vertexArray[0]) * vertexArray.size());
 
       vbObject.create();
@@ -141,7 +144,7 @@ void Saqtwidget::processAudioBuffer(QAudioBuffer buffer)
         amp_spectrum_l.resize(n_spectrumBins);
         amp_spectrum_r.resize(n_spectrumBins);
     }
-    // this is a nieve implementation to get things goings, should be optimized.
+    // There must be a better way...
     std::vector<double> l_channel;
     std::vector<double> r_channel;
     const quint16 *data = buffer.constData<quint16>();
