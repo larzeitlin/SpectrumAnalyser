@@ -10,6 +10,7 @@
 #include <QTime>
 #include <QAudioProbe>
 #include "audioprocessor.h"
+#include "vertex.h"
 
 class QOpenGLShaderProgram;
 
@@ -45,6 +46,8 @@ private:
 
     void ComputePositionOffsets(float &fXOffset, float &fYoffset);
 
+    void reset_points();
+
     // OpenGL state info
     QOpenGLBuffer gl_buffer;
     QOpenGLVertexArrayObject vbObject;
@@ -60,9 +63,12 @@ private:
     std::vector<Transform3D> transforms;
     QTime timer;
 
+    std::vector<Vertex> points;
+
     AudioProcessor processor;
     std::vector<double> amp_spectrum_l;
     std::vector<double> amp_spectrum_r;
+    void update_points();
 };
 
 #endif // SAQTWIDGET_H

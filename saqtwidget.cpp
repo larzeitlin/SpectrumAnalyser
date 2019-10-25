@@ -7,12 +7,11 @@
 
 
 // Default values
-static int default_n_channels = 2;
-static int default_frame_count = 1764;
-static int default_sample_count = default_n_channels * default_frame_count;
-static int default_n_spectrum_bins = (default_frame_count / 2) + 1;
-
-static const  std::array<Vertex, 1> vertexArray = {Vertex(QVector3D(0.0f, 0.0f, 0.0f), QVector3D(0.0f, 1.0f, 0.0f))};
+static const int default_n_channels = 2;
+static const int default_frame_count = 1764;
+static const int default_sample_count = default_n_channels * default_frame_count;
+static const int default_n_spectrum_bins = (default_frame_count / 2) + 1;
+static const Vertex green_middle_point = Vertex(QVector3D(0.0f, 0.0f, 0.0f), QVector3D(0.0f, 1.0f, 0.0f));
 
 Saqtwidget::Saqtwidget(QWidget *parent) :
     QOpenGLWidget(parent)
@@ -21,17 +20,29 @@ Saqtwidget::Saqtwidget(QWidget *parent) :
   , frameCount(default_frame_count)
   , sampleCount(default_sample_count)
   , n_spectrumBins(default_n_spectrum_bins)
+  , points(std::vector<Vertex>(n_spectrumBins, green_middle_point))
   , amp_spectrum_l(std::vector<double>(n_spectrumBins))
   , amp_spectrum_r(std::vector<double>(n_spectrumBins))
-
-
-
 {
-    int nboxes = frameCount;
-    timer.start();
-    for (int i = 0; i < nboxes; ++i) {
-        transforms.push_back(Transform3D());
-        transforms.back().translate(-0.9f + (float(std::log(i) / std::log(n_spectrumBins) ) * 1.8f), -0.9f, 0.0f);
+    reset_points();
+}
+
+void Saqtwidget::reset_points()
+{
+    points = std::vector<Vertex>(n_spectrumBins, green_middle_point);
+    static const int far_left = -1.0;
+    double full_width = 2.0;
+    for (std::size_t i = 0; i != points.size(); ++i) {
+        points[i].setPosition(QVector3D(far_left + (log10(i) / log10(points.size()) * full_width) , 0.0f, 0.0f));
+    }
+}
+
+void Saqtwidget::update_points()
+{
+    for (std::size_t i = 0; i != points.size(); ++i) {
+        QVector3D position = points[i].position();
+        position.setY(amp_spectrum_l[i] / 100.0);
+        points[i].setPosition(position);
     }
 }
 
@@ -58,8 +69,8 @@ void Saqtwidget::initializeGL()
 
       gl_buffer.create();
       gl_buffer.bind();
-      gl_buffer.setUsagePattern(QOpenGLBuffer::StreamDraw);
-      gl_buffer.allocate(vertexArray.data(), sizeof(vertexArray[0]) * vertexArray.size());
+      gl_buffer.setUsagePattern(QOpenGLBuffer::DynamicDraw);
+      gl_buffer.allocate(points.data(), sizeof(points[0]) * points.size());
 
       vbObject.create();
       vbObject.bind();
@@ -87,19 +98,19 @@ void Saqtwidget::resizeGL(int w, int h)
 
 void Saqtwidget::paintGL()
 {
+    update_points();
+    gl_buffer.bind();
+    auto ptr = gl_buffer.map(QOpenGLBuffer::WriteOnly);
+    memcpy(ptr, points.data(), points.size() * sizeof(points[0]));
+    gl_buffer.unmap();
+    gl_buffer.release();
     glClear(GL_COLOR_BUFFER_BIT);
     program->bind();
     program->setUniformValue(worldToView, projection);
     glUniform1f(timeElapsed, timer.elapsed());
     vbObject.bind();
-
-    for (int i = 0; i < int(amp_spectrum_l.size()); ++i)
-    {
-        program->setUniformValue(modelToWorld, transforms[i].toMatrix());
-        program->setUniformValue(fftVal, float(amp_spectrum_l[i]));
-        glDrawArrays(GL_POINTS, 0, vertexArray.size());
-    }
-
+    program->setUniformValue(modelToWorld, QMatrix4x4());
+    glDrawArrays(GL_LINE_STRIP, 0, points.size());
     vbObject.release();
     program->release();
 }
@@ -136,6 +147,7 @@ void Saqtwidget::processAudioBuffer(QAudioBuffer buffer)
         sampleCount = buffer.sampleCount();
         n_spectrumBins = 1 + (frameCount / 2);
         newAudioFile = false;
+        reset_points();
     }
 
 

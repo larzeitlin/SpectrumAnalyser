@@ -9,7 +9,8 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    currentFile = "";
+    currentFile = "/home/luke/Music/Ott/Mir/02 Adrift In Hilbert Space.mp3"; // for faster iteration
+ // currentFile = ""
     ui->label->setText("No File Selected");
 }
 
