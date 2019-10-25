@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include <iostream>
 #include <QDebug>
+#include <QDir>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -19,7 +20,12 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_actionLoad_triggered()
 {
-    currentFile = QFileDialog::getOpenFileName(this, "open a file");
+    currentFile = QFileDialog::getOpenFileName(this,
+                                               "open an audio file",
+                                               QString(),
+                                               QString(),
+                                               nullptr,
+                                               QFileDialog::DontUseNativeDialog);
     ui->label->setText(currentFile);
     ui->openGLWidget->newAudioFileFlag();
 }
