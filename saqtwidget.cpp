@@ -41,7 +41,7 @@ void Saqtwidget::update_points()
 {
     for (std::size_t i = 0; i != points.size(); ++i) {
         QVector3D position = points[i].position();
-        position.setY(amp_spectrum_l[i] / 100.0);
+        position.setY(0.4 + (amp_spectrum_l[i] / 50.0));
         points[i].setPosition(position);
     }
 }
@@ -175,7 +175,7 @@ void Saqtwidget::processAudioBuffer(QAudioBuffer buffer)
     const std::vector<fftw_complex> &fft_out_l = processor.processBuffer(l_channel, n_spectrumBins);
     const std::vector<fftw_complex> &fft_out_r = processor.processBuffer(r_channel, n_spectrumBins);
 
-    double smoothFactor = 0.4;
+    double smoothFactor = 0.2;
 
     for (int i = 0; i < n_spectrumBins; ++i)
     {
